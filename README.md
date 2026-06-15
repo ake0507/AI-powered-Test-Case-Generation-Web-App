@@ -61,9 +61,7 @@ USER ──creates──▶ PROJECT ──contains──▶ TESTCASE
 docker compose up --build
 ```
 
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000
-- API Docs: http://localhost:8000/docs
+
 
 ### Local Development
 
