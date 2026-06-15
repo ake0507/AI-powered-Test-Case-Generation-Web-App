@@ -121,7 +121,8 @@ docker compose up --build
 ```
 
 **Access the application:**
-- Frontend: http://localhost:3000
+- Frontend (Docker / Nginx): http://localhost:3000
+- Frontend (Development server): http://localhost:5173
 - Backend API: http://localhost:8000
 - API Documentation: http://localhost:8000/docs
 - Database: localhost:5432 (postgres/postgres)
