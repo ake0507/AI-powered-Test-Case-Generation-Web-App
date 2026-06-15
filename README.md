@@ -85,7 +85,6 @@ npm install
 npm run dev
 ```
 
-Frontend dev server runs at http://localhost:5173 with API proxy to port 8000.
 
 ## API Endpoints
 
