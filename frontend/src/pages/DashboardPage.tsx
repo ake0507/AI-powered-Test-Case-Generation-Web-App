@@ -11,6 +11,7 @@ export function DashboardPage() {
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState('');
   const [inputData, setInputData] = useState('');
+  const [file, setFile] = useState<File | null>(null);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
 
@@ -36,11 +37,12 @@ export function DashboardPage() {
     setCreating(true);
     setError('');
     try {
-      const project = await api.createProject(name, inputData);
+      const project = await api.createProject(name, inputData, file ?? undefined);
       setProjects((prev) => [project, ...prev]);
       setShowForm(false);
       setName('');
       setInputData('');
+      setFile(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create project');
     } finally {
@@ -98,14 +100,26 @@ export function DashboardPage() {
               <span className="text-sm font-medium text-slate-700">Code or Specification</span>
               <textarea
                 className="input-field mt-1.5 min-h-[200px] font-mono text-xs"
-                required
                 placeholder="Paste your source code or feature specification here..."
                 value={inputData}
                 onChange={(e) => setInputData(e.target.value)}
               />
             </label>
+            <label className="block">
+              <span className="text-sm font-medium text-slate-700">Upload Specification File</span>
+              <input
+                type="file"
+                accept=".txt,.md,.docx,.pdf,.pptx"
+                className="mt-2"
+                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              />
+              {file && <p className="mt-2 text-sm text-slate-600">Selected file: {file.name}</p>}
+              <p className="mt-2 text-sm text-slate-500">
+                Upload a feature specification document, PDF, or slide deck to generate test cases automatically.
+              </p>
+            </label>
             <div className="flex gap-3">
-              <button type="submit" disabled={creating} className="btn-primary">
+              <button type="submit" disabled={creating || (!inputData && !file)} className="btn-primary">
                 {creating ? 'Generating...' : 'Generate Test Cases'}
               </button>
               <button type="button" onClick={() => setShowForm(false)} className="btn-secondary">

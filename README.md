@@ -5,7 +5,7 @@ A full-stack web application that automatically generates software test cases us
 ## 🎯 Features
 
 - **User Authentication** - Secure register, login, logout with JWT tokens
-- **Code & Spec Submission** - Submit source code or textual specifications via text area
+- **Code & Spec Submission** - Submit source code, text specifications, or upload a spec document, PDF, or slide deck
 - **AI Test Generation** - Intelligent analysis generates comprehensive test cases
 - **Results Management** - View, edit, update, and delete generated test cases
 - **Export Functionality** - Download test cases as JSON for integration

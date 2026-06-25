@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File, Form, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -6,6 +6,7 @@ from app.models.project import Project
 from app.models.user import User
 from app.schemas.project import ProjectCreate, ProjectDetailResponse, ProjectResponse, TestCaseResponse
 from app.services.auth import get_current_user
+from app.services.file_parser import extract_text_from_file
 from app.services.job_queue import enqueue_generation
 
 router = APIRouter(prefix="/api/projects", tags=["projects"])
@@ -51,11 +52,35 @@ def list_projects(current_user: User = Depends(get_current_user), db: Session = 
 
 
 @router.post("", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
-def create_project(
-    payload: ProjectCreate,
+async def create_project(
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    content_type = request.headers.get("content-type", "")
+    if "multipart/form-data" in content_type:
+        form = await request.form()
+        name = form.get("name")
+        input_data = form.get("input_data") or ""
+        file = form.get("file")
+
+        if name is None:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail={"error": "MissingName", "message": "Project name is required."},
+            )
+
+        if file and isinstance(file, UploadFile):
+            extracted = await extract_text_from_file(file)
+            if input_data:
+                input_data = f"{input_data}\n\n{extracted}"
+            else:
+                input_data = extracted
+
+        payload = ProjectCreate(name=name, input_data=str(input_data))
+    else:
+        payload = ProjectCreate.model_validate(await request.json())
+
     project = Project(
         user_id=current_user.id,
         name=payload.name,

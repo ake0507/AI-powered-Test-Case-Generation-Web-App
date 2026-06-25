@@ -10,9 +10,13 @@ class ApiClient {
   private async request<T>(path: string, options: RequestInit = {}): Promise<T> {
     const token = this.getToken();
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
       ...(options.headers as Record<string, string>),
     };
+
+    if (!(options.body instanceof FormData)) {
+      headers['Content-Type'] = 'application/json';
+    }
+
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
@@ -61,7 +65,18 @@ class ApiClient {
     return this.request('/api/projects');
   }
 
-  createProject(name: string, inputData: string): Promise<Project> {
+  createProject(name: string, inputData: string, file?: File): Promise<Project> {
+    if (file) {
+      const body = new FormData();
+      body.append('name', name);
+      body.append('input_data', inputData);
+      body.append('file', file);
+      return this.request('/api/projects', {
+        method: 'POST',
+        body,
+      });
+    }
+
     return this.request('/api/projects', {
       method: 'POST',
       body: JSON.stringify({ name, input_data: inputData }),
