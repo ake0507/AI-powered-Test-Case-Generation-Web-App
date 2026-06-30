@@ -70,12 +70,21 @@ async def create_project(
                 detail={"error": "MissingName", "message": "Project name is required."},
             )
 
-        if file and isinstance(file, UploadFile):
-            extracted = await extract_text_from_file(file)
-            if input_data:
-                input_data = f"{input_data}\n\n{extracted}"
-            else:
-                input_data = extracted
+        if file:
+            extracted = (await extract_text_from_file(file)).strip()
+            if extracted:
+                if input_data:
+                    input_data = f"{input_data}\n\n{extracted}"
+                else:
+                    input_data = extracted
+            elif not input_data:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={
+                        "error": "EmptyFile",
+                        "message": "Uploaded file contains no readable text.",
+                    },
+                )
 
         payload = ProjectCreate(name=name, input_data=str(input_data))
     else:

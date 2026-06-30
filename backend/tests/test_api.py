@@ -110,6 +110,26 @@ def test_full_project_flow(client):
     assert len(detail.json()["test_cases"]) > 0
 
 
+def test_create_project_with_empty_uploaded_file_returns_bad_request(client):
+    reg = client.post(
+        "/api/register",
+        json={"name": "Carol", "email": "carol@example.com", "password": "password123"},
+    )
+    token = reg.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    response = client.post(
+        "/api/projects",
+        headers=headers,
+        data={"name": "Empty Spec", "input_data": ""},
+        files={"file": ("empty.txt", b"", "text/plain")},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"]["error"] == "EmptyFile"
+    assert "readable text" in response.json()["detail"]["message"]
+
+
 def test_test_generator_extracts_functions():
     code = "def add(a, b):\n    return a + b\n\ndef subtract(a, b):\n    return a - b"
     cases = generate_test_cases(code)
